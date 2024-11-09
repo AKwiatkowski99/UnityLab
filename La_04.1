@@ -1,1 +1,67 @@
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+public class RandomCubesGenerator : MonoBehaviour
+{
+    List<Vector3> positions = new List<Vector3>();
+    public float delay = 3.0f;
+    public int numberOfObjects = 10; // Określenie ilości obiektów do wygenerowania
+    int objectCounter = 0;
+
+    // Obiekt do generowania
+    public GameObject block;
+
+    void Start()
+    {
+        // Uzyskujemy zakres pozycji x oraz z na podstawie rozmiaru platformy
+        Renderer platformRenderer = GetComponent<Renderer>();
+        if (platformRenderer != null)
+        {
+            float platformWidth = platformRenderer.bounds.size.x;
+            float platformDepth = platformRenderer.bounds.size.z;
+
+            // Generujemy losowe pozycje w zakresie platformy
+            List<float> pozycje_x = Enumerable.Range(0, (int)platformWidth)
+                                              .OrderBy(x => Guid.NewGuid())
+                                              .Take(numberOfObjects)
+                                              .Select(x => (float)x)
+                                              .ToList();
+
+            List<float> pozycje_z = Enumerable.Range(0, (int)platformDepth)
+                                              .OrderBy(z => Guid.NewGuid())
+                                              .Take(numberOfObjects)
+                                              .Select(z => (float)z)
+                                              .ToList();
+
+            for (int i = 0; i < numberOfObjects; i++)
+            {
+                positions.Add(new Vector3(pozycje_x[i], 5, pozycje_z[i]));
+            }
+        }
+
+        foreach (Vector3 elem in positions)
+        {
+            Debug.Log(elem);
+        }
+
+        // Uruchamiamy coroutine
+        StartCoroutine(GenerujObiekt());
+    }
+
+    IEnumerator GenerujObiekt()
+    {
+        Debug.Log("wywołano coroutine");
+        foreach (Vector3 pos in positions)
+        {
+            Instantiate(this.block, this.positions.ElementAt(this.objectCounter++), Quaternion.identity);
+            yield return new WaitForSeconds(this.delay);
+        }
+
+        // Zatrzymujemy coroutine
+        StopCoroutine(GenerujObiekt());
+    }
+}
